@@ -1,7 +1,7 @@
 # UnixShell
 Implementation of A UNIX Style Shell in C with accompanying vector and hashmap implementations
 
-Type 'make' of 'make nush' to build. Run with ./nush on command line on a linux system or equivalent.
+Type 'make' or 'make nush' to build. Run with ./nush on command line on a linux system or equivalent.
 
 OR
 
