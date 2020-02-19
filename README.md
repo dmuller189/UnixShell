@@ -17,3 +17,6 @@ Type 'make clean' to remove non source-code files
 	- Shell parentheses  
 	- Fix background procesing ( & operator )
 	- Fix parsing and order of operations for shell operators
+	- Valgrind checks and memory leaks
+
+Run 'perl test.pl' to execute shell tests.  Some failing atm
