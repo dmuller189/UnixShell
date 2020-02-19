@@ -9,6 +9,8 @@ Give command line arguments in the form of a file
 	- e.g ./nush tests/01-echo.out
 
 
+Type 'make clean' to remove non source-code files
+
 #TODO
 
 	- Shell Variables 
