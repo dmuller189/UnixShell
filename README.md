@@ -8,8 +8,10 @@ Type 'make' to build, and run with ./nush
 Give command line arguments in the form of a file	
 	- e.g ./nush tests/01-echo.out
 
+
 #TODO
-	- Shell Variables \n
-	- Shell parentheses \n
-	- Fix background proesses \n
-	- Fix parsing and order of operations for shell operators \n
+
+	- Shell Variables <br />
+	- Shell parentheses \n <br />
+	- Fix background proesses \n <br />
+	- Fix parsing and order of operations for shell operators \n <br />
