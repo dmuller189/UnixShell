@@ -11,7 +11,7 @@ Give command line arguments in the form of a file
 
 #TODO
 
-	- Shell Variables <br />
-	- Shell parentheses \n <br />
-	- Fix background proesses \n <br />
+	- Shell Variables 
+	- Shell parentheses  
+	- Fix background proesses  <br />
 	- Fix parsing and order of operations for shell operators \n <br />
