@@ -1,7 +1,7 @@
 # UnixShell
 Implementation of A UNIX Style Shell in C
 
-Type 'make' to build, and run with ./nush
+Type 'make' of 'make nush' to build. Rrun with ./nush on command line.
 
 #OR
 
@@ -16,7 +16,8 @@ Type 'make clean' to remove non source-code files
 	- Shell Variables 
 	- Shell parentheses  
 	- Fix background procesing ( & operator )
-	- Fix parsing and order of operations for shell operators
+	- evaluate parsing and order of operations for shell operators
 	- Valgrind checks and memory leaks
+	- static analysis and clang checks
 
-Run 'perl test.pl' to execute shell tests.  Some failing atm
+Run 'make test' to execute shell tests.  Some failing at the moment
