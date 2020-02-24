@@ -128,8 +128,9 @@ int backgroundCommand(ast* tree) { //TODO
 	return 0;	
     } else {
     //child
-//	setpgid(cpid,0);
+//	setpgid(cpid;
     execTree(tree->left);
+    _exit(0);
 
     }
     return 0;
