@@ -14,11 +14,13 @@ Type 'make clean' to remove non source-code files
 # TODO
 
 	- Shell Variables 
-	- Shell parentheses  
-	- Fix background procesing ( & operator )
-	- evaluate parsing and order of operations for shell operators
+		- read '=' operator when parsing 
+		- read '$xxx' variables and make appropriate swap
+	- Shell parentheses
+	- evaluate parsing logic and order of operations for shell operators
+		- exit operator with && and || operators
 	- Valgrind checks and memory leaks
-	- static analysis and clang checks
 	- some possible hashmap bugs with reading over tombstone values
+	- adapt hashmap for <string, string> mappings
 
 Run 'make test' to execute shell tests.  Some failing at the moment

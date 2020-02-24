@@ -122,13 +122,9 @@ int backgroundCommand(ast* tree) { //TODO
 
     if((cpid = fork())) {
     //parent         
-
-//	setpgid(cpid,0);
-
 	return 0;	
     } else {
     //child
-//	setpgid(cpid;
     execTree(tree->left);
     _exit(0);
 
