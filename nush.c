@@ -10,13 +10,6 @@
 #include "svec.h"
 #include "ast.h"
 #include "hashmap.h"
-/**
- * OVerall notes:
- * 	- order of operations and what to split first on
- * 		-split first on ';', or just left to right
- * 		-look for background process & indicator to run whole
- * 		processes in background
- */
 
 char* readCArgs(int size, char* argv[]); 
 void buildAndRun(char* line);
@@ -25,7 +18,7 @@ int execTree(ast* tree);
 int simpleCommand(ast* tree) {
 
 
-		/* TODO - variables feature with hashma
+	/* TODO - variables feature with hashmap
 	if(strcmp("=", tree->cmd->func) {
 		addToHash(tree,
 	}
@@ -50,7 +43,6 @@ int simpleCommand(ast* tree) {
     }
 
     char* cmd = tree->cmd->func;
-
     int cpid;
 
     if((cpid = fork())) {
@@ -63,7 +55,6 @@ int simpleCommand(ast* tree) {
         return  execvp(cmd, tree->cmd->args);
         exit(-1);
     }
-
     return 0; 
 }
 
@@ -115,9 +106,7 @@ int orCommand(ast* tree) {
     }
 }
 
-
-int backgroundCommand(ast* tree) { //TODO
-
+int backgroundCommand(ast* tree) { 
     int cpid;
 
     if((cpid = fork())) {
@@ -152,6 +141,7 @@ int redirectOutputCommand(ast* tree) {
 		close(fd);
 
         execTree(tree->left);
+	
     }
 }
 
