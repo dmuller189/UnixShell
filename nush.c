@@ -37,10 +37,12 @@ int simpleCommand(ast* tree) {
 		return 0;
 	}
 
+	//special case of 'false' command
     if (strcmp("false",tree->cmd->func) == 0) {
         return -1;
     }
 
+    //special case of 'true' command
     if (strcmp("true",tree->cmd->func) == 0) {
         return 0;
     }

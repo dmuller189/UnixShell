@@ -13,14 +13,13 @@ hashmap_pair* make_empty_pair();
 hashmap* make_hashmap_presize(int nn); 
 
 /*
- * grows the hashmap when the load capacity exceeps .5
+ * grows the hashmap when the load capacity exceeds .5
  * - Doubles the capacity, then copies over old values into grown hashmap memory
  */
 void map_grow(hashmap* hh) {
 
 		long nn = hh->cap;
 		hashmap_pair** data = hh->data;
-
 	
 		//new data storage
 		hh->data = malloc(2*nn*sizeof(hashmap_pair*));
@@ -45,7 +44,7 @@ void map_grow(hashmap* hh) {
 
 
 /*
- * hash function
+ * basic hash function
  */
 long
 hash(char* key, long cap) 

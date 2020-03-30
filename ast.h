@@ -14,10 +14,8 @@
 typedef struct ast {
 
 	char* op;
-
 	struct ast* left;
 	struct ast* right;
-
 	struct command* cmd;	
 } ast;
 
@@ -35,11 +33,10 @@ typedef struct command {
 
 ast* make_ast_command(svec* tokens);
 ast* make_ast_op(char* op, ast* left, ast* right);
-
-ast* parse(svec* tokens, hashmap* map);	//parses tokens to build ast
-void free_ast(ast* tree);	//frees ast	
+ast* parse(svec* tokens, hashmap* map);	
+void free_ast(ast* tree);	
 void free_command(command* cmd);
-void print_ast(ast* tree);	//prints ast
+void print_ast(ast* tree);	
 
 
 #endif
