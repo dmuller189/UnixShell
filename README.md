@@ -2,7 +2,7 @@
 Implementation of A UNIX Style Shell in C with accompanying vector and hashmap implementations
 
 
-##Explanation
+## Explanation
 - nush.c's main function is the entry point to the program
 - ast.h and ast.c are a header and source file for the abstract syntax tree of the program
 - hashmap.h and hashmap.c implement a hashmap from char pointer to int
