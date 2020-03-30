@@ -1,6 +1,12 @@
 # UnixShell
 Implementation of A UNIX Style Shell in C with accompanying vector and hashmap implementations
 
+
+##Explanation
+	-
+
+
+## To Use
 Type 'make' or 'make nush' to build. Run with ./nush on command line on a linux system or equivalent.
 
 OR
@@ -15,7 +21,7 @@ Type 'make clean' to remove non source-code files
 
 	- Shell Variables 
 		- read '=' operator when parsing 
-		- read '$xxx' variables and make appropriate swap
+		- read '$xxx' variables and make appropriate swap with the hashmap
 	- Shell parentheses
 	- evaluate parsing logic and order of operations for shell operators
 		- exit operator with && and || operators
