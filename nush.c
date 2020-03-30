@@ -15,6 +15,9 @@ char* readCArgs(int size, char* argv[]);
 void buildAndRun(char* line);
 int execTree(ast* tree);
 
+/*
+ *executes a simple shell command (no special operators)
+ */
 int simpleCommand(ast* tree) {
 
 
@@ -58,6 +61,9 @@ int simpleCommand(ast* tree) {
     return 0; 
 }
 
+/*
+ * driver to construct tokens, build the abstract syntax tree, then evaluate the tree
+ */
 void buildAndRun(char* line) {
 
     svec* tokens = tokenize(line);
@@ -69,6 +75,9 @@ void buildAndRun(char* line) {
 //    free_svec(tokens);
 }
 
+/*
+ * Executes case of tree split of ';' operator
+ */
 int semiColonCommand(ast* tree) {
 
    int first =  execTree(tree->left);
@@ -82,6 +91,9 @@ int semiColonCommand(ast* tree) {
    }
 }
 
+/*
+ * Executes case of ast split of '&&' operator
+ */
 int andCommand(ast* tree) { 
 
     int goodFirst = execTree(tree->left);
@@ -97,6 +109,9 @@ int andCommand(ast* tree) {
     }
 }
 
+/**
+ * Executes case of ast split of '||' operator
+ */
 int orCommand(ast* tree) {
 
     int first = execTree(tree->left);
@@ -106,6 +121,9 @@ int orCommand(ast* tree) {
     }
 }
 
+/*
+ * Executes case of ast split of '&' operator
+ */ 
 int backgroundCommand(ast* tree) { 
     int cpid;
 
@@ -121,6 +139,9 @@ int backgroundCommand(ast* tree) {
     return 0;
 }
 
+/*
+ * Executes case of ast split on '>'  operator
+ */
 int redirectOutputCommand(ast* tree) { 
 
     int cpid;
@@ -145,6 +166,9 @@ int redirectOutputCommand(ast* tree) {
     }
 }
 
+/*
+ * Executes case of ast split on '<' operator
+ */
 int redirectInputCommand(ast* tree) {
 
     int cpid;
@@ -167,6 +191,9 @@ int redirectInputCommand(ast* tree) {
 }
 
 
+/*
+ * Executes case of ast split on '|' operator
+ */
 int pipeCommand(ast* tree) {
     
 	int cpid;
@@ -195,6 +222,9 @@ int pipeCommand(ast* tree) {
 }
 
 
+/*
+ * handles special case of changing directory command
+ */
 int handleCD(ast* tree) { 
 
     if(chdir(tree->cmd->args[1]) != 0) {
@@ -203,14 +233,23 @@ int handleCD(ast* tree) {
     return 0;
 }
 
+/*
+ * Handles special case of exit command;
+ */
 int handleExit(ast* tree) {
     exit(0);
     return 0;
 }
 
+
+/*
+ * Executes the given ast
+ * - Recursively evaluates tree on operator in leaf node
+ */
 int execTree(ast* tree) {
 
 
+	//protect again null data
 	if(tree == 0) {
 		return 0;
 	}	
@@ -231,6 +270,7 @@ int execTree(ast* tree) {
         
     } 
 
+    
     if(strcmp(";", tree->op) == 0) {
        return semiColonCommand(tree);
     }
@@ -264,10 +304,16 @@ int execTree(ast* tree) {
     return 0;
 }
 
+/*
+ * Entry point ot the programi
+ *  - reads user input, executes command until exit
+ *  - option to read from a file and execute line by line 
+ */
 int main(int argc, char* argv[]){
     
     char cmd[256];
-    
+   
+    //read from a file 
     if(argc > 1) {
 
         FILE* fh = fopen(argv[1], "r");           
@@ -293,6 +339,7 @@ int main(int argc, char* argv[]){
         }
     }
 
+    //take user input interactively
     if(argc == 1) {
 
         while(1) {
@@ -301,7 +348,7 @@ int main(int argc, char* argv[]){
             fflush(stdout);                 
             char* rv = fgets(cmd, 256, stdin);        
 
-            //enter on empty line
+            //user gives empty line
             if(cmd[0] == '\n') {
                 continue;
             }

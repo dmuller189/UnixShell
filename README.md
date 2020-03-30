@@ -22,8 +22,6 @@ Type 'make clean' to remove non source-code files
 	- Valgrind checks and memory leaks
 	- some possible hashmap bugs with reading over tombstone values
 	- adapt hashmap for <string, string> mappings
-	- consider file reorgianization and structure
-		- move nush functions and helper functions
-		to seperate file from main function
+
 
 Run 'make test' to execute shell tests.  Some failing at the moment

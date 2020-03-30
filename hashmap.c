@@ -12,7 +12,10 @@
 hashmap_pair* make_empty_pair();
 hashmap* make_hashmap_presize(int nn); 
 
-//grows the hashmap when the load capacity exceeps .5
+/*
+ * grows the hashmap when the load capacity exceeps .5
+ * - Doubles the capacity, then copies over old values into grown hashmap memory
+ */
 void map_grow(hashmap* hh) {
 
 		long nn = hh->cap;
@@ -40,8 +43,12 @@ void map_grow(hashmap* hh) {
 		free(data);
 }
 
+
+/*
+ * hash function
+ */
 long
-hash(char* key, long cap) //more or less the same from class notes, with a different prime# and other small changes
+hash(char* key, long cap) 
 {
     // Produce an appropriate hash value.
     long hs = 0;
@@ -51,8 +58,12 @@ hash(char* key, long cap) //more or less the same from class notes, with a diffe
 	return hs % cap;
 }
 
+
+/*
+ * makes a hashmap of size nn with all empty value
+ */
 hashmap*
-make_hashmap_presize(int nn) //set data to be all 'empty' pairs (unused)
+make_hashmap_presize(int nn) 
 {
     hashmap* hh = malloc(sizeof(hashmap));
     //Allocate and initialize a hashmap with capacity 'nn'.
@@ -74,10 +85,12 @@ make_hashmap()
 }
 
 
+/*
+ * free all alocated data of the given hashmap
+ */
 void
 free_hashmap(hashmap* hh)
 {
-    //  Free all allocated data.
 	if(hh) {
 
 		for(int i = 0; i < hh->cap; ++i) {
@@ -88,12 +101,20 @@ free_hashmap(hashmap* hh)
 	}
 }
 
+
+/*
+ * Returns whether the given hashmap has the key-value pair
+ */
 int
 hashmap_has(hashmap* hh, char* kk)
 {
     return hashmap_get(hh, kk) != -1;
 }
 
+
+/*
+ * Gets the hashmap value associated with the key
+ */
 int
 hashmap_get(hashmap* hh, char* kk)
 {
@@ -129,7 +150,9 @@ hashmap_get(hashmap* hh, char* kk)
 }
 
 
-//creates a pair in the hashmap
+/*
+ * Makes a hasmap_pair* with the given inputs
+ */
 hashmap_pair* make_pair(char* key, int val, bool used, bool tomb){
 
 	hashmap_pair* hp = malloc(sizeof(hashmap_pair));
@@ -146,12 +169,14 @@ hashmap_pair* make_empty_pair() {
 }
 
 
+/*
+ * Inserts the key-value pair in the hashmap at the first
+ * available slot at or after the hash index.
+ * - Replaces any existing values for an existing key
+ */
 void
 hashmap_put(hashmap* hh, char* kk, int vv)
 {
-    // Insert the value 'vv' into the hashmap
-    // for the key 'kk', replacing any existing value
-    // for that key.	
 	
 	//grow if going to exceed load capacity
 	if(    ((1.0 * hh->size) / (1.0 * hh->cap)) >= .5) {
@@ -159,22 +184,23 @@ hashmap_put(hashmap* hh, char* kk, int vv)
 	}
 
 	long hkey = hash(kk, hh->cap);
-
 	long limit = hh->cap;
 	long ii = hkey;
 
+	//insert at right slot via linear probing
 	for(ii; ii < limit; ++ii) {
 
-		//if key exists, updata with next value
-		if( strlen(hh->data[ii]->key)==strlen(kk) //same line length
-					   	&& (strncmp( hh->data[ii]->key, kk, strlen(kk))==0))//same string values
+		char* key = (char*) hh->data[ii]->key;
+		//if key exists, update with next value
+		if( strlen(key)==strlen(kk) 
+			&& (strncmp(key, kk, strlen(kk))==0))//same string values
 	   	{
 			hh->data[ii]->val = vv;
 			return;
 		}
 
 
-		if(! hh->data[ii]->used ) { //puts in first unused slot
+		if(! hh->data[ii]->used) { //puts in first unused slot
 	
 			strcpy(hh->data[ii]->key, kk);
 			hh->data[ii]->val = vv;
@@ -193,32 +219,30 @@ hashmap_put(hashmap* hh, char* kk, int vv)
 }
 
 
-
+/*
+ * Remoes any value associated with the key in the hashmap
+ */
 void
 hashmap_del(hashmap* hh, char* kk)
 {
-    // Remove any value associated with
-    // this key in the map.
 	
 	int hkey = hash(kk, hh->cap);
-
-
 	long limit = hh->cap;
 	long i = hkey;
-
 
 	//if being used, delete the value of the key
 	for(i; i < limit; ++i) {
 
-	
-		//if found key, delete associated value
+		//if found key, delete associated value 
 		if(  (strncmp(hh->data[i]->key, kk, strlen(kk)) == 0)  ) {
 			strcpy(hh->data[i]->key, "empt");
 			hh->data[i]->used = false;
+			hh->data[i]->tomb = true;
 			hh->size -= 1;
 			break;
 		}
 
+		//circle to top of association table if key not found by bottom
 		if(i+1 >= hh->cap) {
 				i = 0;
 				limit = hh->cap;
@@ -226,6 +250,9 @@ hashmap_del(hashmap* hh, char* kk)
 	}
 }
 
+/*
+ * gets the i'th pair of the hashmap
+ */
 hashmap_pair
 hashmap_get_pair(hashmap* hh, int ii)
 {
@@ -234,14 +261,15 @@ hashmap_get_pair(hashmap* hh, int ii)
 	return ans;
 }
 
+
+/**
+ * prints a representation of the hashmap values in storage order
+ *  - Debugging tool
+ */
 void
 hashmap_dump(hashmap* hh)
 {
     printf("== hashmap dump ==\n");
-    //  Print out all the keys and values currently
-    // in the map, in storage order. Useful for debugging.
-	
-
 	long ii = 0;
 	while(hh->data[ii]) {
 		if(hh->data[ii]->used) {

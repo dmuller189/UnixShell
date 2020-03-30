@@ -7,6 +7,10 @@
 int wordIsOperator(char* word);
 void free_command(command* com);
 
+
+/**
+ * Returns an svec* sliced according to the given bounds and input svec*
+ */
 svec* slice(svec* toks, int i0, int i1) { 
 
 	svec* ans = make_svec();
@@ -20,22 +24,36 @@ svec* slice(svec* toks, int i0, int i1) {
 
 
 /**
- * Searches for a shell operator and returns the index of the first occurance, else -1
+ * Searches for a shell operator in the tokens list
+ * Looks for '&' and ';' operators first
+ * Returns the index of the first occurance, else -1
  */
 int containsOperator(svec* toks) {
 
+	int ans = 0;
 
 	if(toks->size == 0) {
 		return -1;
 	}
 
-	for(int ii = 0; ii < toks->size; ++ii) {
-		if(wordIsOperator(svec_get(toks, ii))) {
-			return ii;
+	//parse tokens and find the index of the leftmost operator
+	//if '&' of ';' is found, return that index
+	for(int ii = toks->size-1; ii >= 0; --ii) {
+		
+		char* tok = svec_get(toks, ii);	
+		if(wordIsOperator(tok)) {
+			ans = ii;
+			if(strcmp("&",tok)==0 || strcmp(";", tok)==0) {
+				return ans;
+			}
 		}
 	}
-	return -1;
+	return ans == 0 ? -1 : ans;
 }
+
+/*
+ * Determines is the given string is a valid shell operator
+ */
 int wordIsOperator(char* word) {
 	return ( 
 		strcmp("<", word)  == 0 ||
@@ -60,6 +78,7 @@ int wordIsOperator(char* word) {
  */
 ast* parse(svec* tokens, hashmap* map) {
 
+	//look for shell operators in tokens
 	int co =  containsOperator(tokens);
 
 	//no shell operators found
@@ -72,23 +91,27 @@ ast* parse(svec* tokens, hashmap* map) {
 		svec* left = slice(tokens, 0, co-1); //inclusive of both bounds
 		svec* right;
 
-
 		if(co+1 > tokens->size - 1) {
 			right = make_svec();
 		} else {
 			right = slice(tokens, co+1, tokens->size - 1);
 		}
 
+		//recursively build abstract syntax tree
 		ast* tree = make_ast_op(svec_get(tokens, co), parse(left, map), parse(right,map));
 		//free some things(left and right)... TODO
 		free_svec(left);
 		free_svec(right);
 		
-
 		return tree;
 	}	
 }
 
+/*
+ * makes an abstract syntax tree split on the given operator
+ * 	- root node has the value of the operator
+ * 	- left and right branches are valid abstract syntax tree's
+ */
 ast* make_ast_op(char* op, ast* left, ast* right){
 	ast* tree = malloc(sizeof(ast));
 	tree->op = strdup(op);
@@ -98,6 +121,12 @@ ast* make_ast_op(char* op, ast* left, ast* right){
 	return tree;
 }
 
+
+
+/*
+ * returns a list of strings (char**) representing the arguments 
+ * to be passed into execvp()
+ */
 char** buildCommandArgs(svec* tokens, char* funcName)  {
 
 	if(tokens->size == 0) {
@@ -121,6 +150,9 @@ char** buildCommandArgs(svec* tokens, char* funcName)  {
 	return ars;
 }
 
+/*
+ * Build an abstract syntax tree representing a leaf node - a simple command with no shell operators
+ */
 ast* make_ast_command(svec* tokens) {
 
 	ast* tree = malloc(sizeof(ast));
@@ -144,6 +176,9 @@ ast* make_ast_command(svec* tokens) {
 }
 
 
+/**
+ * Frees all associated memory with the abstract syntax tree
+ */
 void free_ast(ast* tree) { //TODO
 
 	if(tree == 0) {
@@ -164,6 +199,9 @@ void free_ast(ast* tree) { //TODO
 	free(tree);
 }
 
+/*
+ * Frees all memory from the given command structure
+ */
 void free_command(command* com) {
 
 	if(com == 0) {
@@ -186,11 +224,8 @@ void free_command(command* com) {
 			free(com->args[i]);
 		}
 	}
-
 	free(com->args);
 	free(com);
-
-
 }
 
 

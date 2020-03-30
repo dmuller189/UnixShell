@@ -3,15 +3,22 @@
 
 #include <stdbool.h>
 
+/*
+ * Represents a pair in the hashmap's association array
+ */
 typedef struct hashmap_pair {
 
-	//consider elongating value
-    char key[5]; // null terminated strings
-    int  val;
-    bool used;
-    bool tomb;
+    char key[5]; 	//null terminated string key
+    int  val;		//value
+    bool used;		//slot in use?
+    bool tomb;		//has this slot been deleted?
 } hashmap_pair;
 
+
+/**
+ *- hashmap struct using an assosiation table of hashmap_pair
+ *- load factor always at or below 0.5
+ */
 typedef struct hashmap {
   
     long cap;

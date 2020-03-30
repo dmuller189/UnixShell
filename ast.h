@@ -4,6 +4,13 @@
 #include "svec.h"
 #include "hashmap.h"
 
+
+/*
+ * Represents an recursize abstract syntax tree
+ * - op is the value at the root node holding a shell operator (e.g ";", "|", "<"...)
+ * - left and right are recursively valid ast's, and are null on leaf nodes
+ * - cmd is used for representing leaf node values, and is otherwise null 
+ */
 typedef struct ast {
 
 	char* op;
@@ -14,6 +21,10 @@ typedef struct ast {
 	struct command* cmd;	
 } ast;
 
+/*
+ * Represents a lead node
+ * - acts as a simple shell command without an operator
+ */
 typedef struct command {
 
 	char* func;

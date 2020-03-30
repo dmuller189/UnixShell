@@ -4,12 +4,15 @@
 #ifndef SVEC_H
 #define SVEC_H
 
+
+/*
+ * structure representing a variable length vector of char*
+ */
 typedef struct svec {
+
     int size;
     char** data;
     int capacity;
-
-
 
 } svec;
 
