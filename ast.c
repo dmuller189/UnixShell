@@ -174,7 +174,6 @@ ast*  make_ast_command(svec* tokens) {
 		leaf->func = strdup(svec_get(tokens, 0));
 	}
 
-	leaf->args = malloc(sizeof(char*)*(tokens->size + 2));
 	leaf->args = buildCommandArgs(tokens, leaf->func);
 
 	c->leaf = leaf;
