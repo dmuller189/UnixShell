@@ -10,8 +10,10 @@ struct ast;
 
 
 /*
- * Represents a lead node
+ * Represents a leaf node
  * - acts as a simple shell command without an operator
+ * 	- func: the shell command
+ *	- args: the shell arguments of the command
  */
 typedef struct command {
 
@@ -21,7 +23,7 @@ typedef struct command {
 } command;
 
 /*
- * Represents an node on the syntax tree 
+ * Represents a node on the syntax tree 
  * - op is the value at the root node holding a shell operator (e.g ";", "|", "<"...)
  * - left and right are recursively valid ast's, 
  */
@@ -61,7 +63,6 @@ ast* make_ast_command(svec* tokens);
 ast* make_ast_op(char* op, ast* left, ast* right);
 ast* parse(svec* tokens, hashmap* map);	
 void free_ast(ast* tree);	
-//void free_command(command* cmd);
 void print_ast(ast* tree);	
 
 

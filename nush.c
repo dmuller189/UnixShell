@@ -30,11 +30,9 @@ int simpleCommand(ast* tree) {
 	}
 	*/
 
-	//do nothing on null data
-	if(tree == 0 ||tree->value == 0  || tree->value->leaf == 0) {
-			return 0;
-	}
 
+	//sanity check
+	assert(tree != 0 && tree->value != 0 && tree->value->leaf != 0);
 	assert(tree->type == 0);
 
 	//passed empty comand
@@ -78,43 +76,34 @@ void buildAndRun(char* line) {
     ast* tree = parse(tokens, map);  
     execTree(tree);                
     free_ast(tree);
-//	free_hashmap(map);
-//    free_svec(tokens);
+	free_hashmap(map);
+    free_svec(tokens);
 }
 
 /*
  * Executes case of tree split of ';' operator
  */
 int semiColonCommand(ast* tree) {
-assert(tree->type == 1);	
+   
+   assert(tree->type == 1);	
 
    int first =  execTree(tree->value->node->left);
    int sec =  execTree(tree->value->node->right);
 
-   if (first == 0 && sec == 0) {
-       return 0;
-   }
-   else {
-       return -1;
-   }
+   return (first == 0 && sec == 0) ? 0 : -1; //return -1 if either exec fails
 }
 
 /*
  * Executes case of ast split of '&&' operator
  */
 int andCommand(ast* tree) { 
-assert(tree->type == 1);	
-    int goodFirst = execTree(tree->value->node->left);
+	
+	assert(tree->type == 1);	
+    
+	int goodFirst = execTree(tree->value->node->left); //check if left side executed ok
     int sec = -1;
-    if(goodFirst == 0) {
-      sec =  execTree(tree->value->node->right);
-    }
-
-    if (sec == 0) {
-        return 0;
-    } else {
-        return -1;
-    }
+   
+	return (goodFirst == 0) ? execTree(tree->value->node->right) : -1; //return -1 is left side fails
 }
 
 /**
@@ -125,16 +114,20 @@ int orCommand(ast* tree) {
     int first = execTree(tree->value->node->left);
 
     if(first != 0) {
-        execTree(tree->value->node->right);
+        execTree(tree->value->node->right); //execute right side if left fails
     }
+	
+	return 0;
 }
 
 /*
  * Executes case of ast split of '&' operator
  */ 
 int backgroundCommand(ast* tree) {
-assert(tree->type == 1);	
-    int cpid;
+	
+	assert(tree->type == 1);	
+    
+	int cpid;
 
     if((cpid = fork())) {
     //parent         
@@ -162,16 +155,13 @@ assert(tree->type == 1);
     } else {
 		//child
 
-        //change file descriptor to accomplish redirect
-        //int fd = open(tree->right->cmd->func, O_CREAT | O_APPEND | O_WRONLY , 0644);
-       
+        //change file descriptor to accomplish redirect 
 		int fd;
 		fd = open(tree->value->node->right->value->leaf->func, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 		dup2(fd, 1);
 		close(fd);
 
         execTree(tree->value->node->left);
-	
     }
 }
 
@@ -179,15 +169,19 @@ assert(tree->type == 1);
  * Executes case of ast split on '<' operator
  */
 int redirectInputCommand(ast* tree) {
-assert(tree->type == 1);	
-    int cpid;
+	
+	assert(tree->type == 1);	
+    
+	int cpid;
 
     if((cpid = fork())) {
-
+		//parent process
         int st;
         waitpid(cpid, &st, 0);
 
     }else {
+
+		//child process
 
 		int fd;
         fd = open(tree->value->node->right->value->leaf->func, O_RDONLY, 0);
@@ -239,10 +233,7 @@ int handleCD(ast* tree) {
 
 	assert(tree->type == 0);	
 
-    if(chdir(tree->value->leaf->args[1]) != 0) {
-        return -1;
-    }
-    return 0;
+	return (chdir(tree->value->leaf->args[1]) != 0) ? -1 : 0;
 }
 
 /*
@@ -267,7 +258,7 @@ int execTree(ast* tree) {
 	}	
 
     //handling cd 
-    if(tree->value->node->op == 0 && strcmp(tree->value->leaf->func, "cd") == 0) {
+    if(tree->type == 0 && strcmp(tree->value->leaf->func, "cd") == 0) {
         return handleCD(tree);
     }
 
@@ -286,6 +277,7 @@ int execTree(ast* tree) {
 	//rest must be case with operators
 
 	assert(tree->type == 1);
+	assert(tree->value->node->op != 0);
 
     if(strcmp(";", tree->value->node->op) == 0) {
        return semiColonCommand(tree);
@@ -315,7 +307,6 @@ int execTree(ast* tree) {
     if(strcmp("|", tree->value->node->op) == 0) {
         return pipeCommand(tree);
     }
-
 
     return 0;
 }

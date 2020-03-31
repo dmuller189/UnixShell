@@ -97,7 +97,6 @@ ast* parse(svec* tokens, hashmap* map) {
 
 		//recursively build abstract syntax tree
 		ast* tree = make_ast_op(svec_get(tokens, co), parse(left, map), parse(right,map));
-		//free some things(left and right)... TODO
 		free_svec(left);
 		free_svec(right);
 		
@@ -165,11 +164,10 @@ ast*  make_ast_command(svec* tokens) {
 	ast* tree = malloc(sizeof(ast));
 	tree->type = 0;
 
-	container* c = malloc(sizeof(container));
+	container* c = malloc(sizeof(container)); 	
 
 	command* leaf = malloc(sizeof(command));
 	
-
 	if(tokens->size == 0) {
 		leaf->func = 0;
 	} else {
@@ -184,33 +182,13 @@ ast*  make_ast_command(svec* tokens) {
 	tree->value = c;
 
 	return tree;
-
-
-
-	/*
-	command* tree = malloc(sizeof(ast));
-	
-	command* c = malloc(sizeof(command));
-
-	if(tokens->size == 0) {
-		c->func = 0;
-	} else {
-		c->func = strdup(svec_get(tokens, 0));
-	}
-//	c->args = malloc(sizeof(char*) * (tokens->size + 2)); //TODO - verify length	
-	c->args = buildCommandArgs(tokens, c->func);
-
-	tree->cmd = c;
-
-	return tree;
-	*/
 }
 
 
 /**
  * Frees all associated memory with the abstract syntax tree
  */
-void free_ast(ast* tree) { //TODO
+void free_ast(ast* tree) {
 
 	if(tree == 0) {
 		return;
@@ -220,37 +198,21 @@ void free_ast(ast* tree) { //TODO
 		free_command(tree);
 	} else { //must be a node
 
-		free_ast(tree->value->node->left); //TODO - need arrows to node, or just value->left
+		free_ast(tree->value->node->left);
 		free_ast(tree->value->node->right);
 		free(tree->value->node->op);
+		free(tree->value->node);
+		free(tree->value);
+		free(tree);
 	}
-
-
-	free(tree->value->node);
-	free(tree->value);
-	free(tree);
-
-
-	/*
-	if(tree->op == 0) {
-		free(tree->right);
-		free(tree->left);
-		free_command(tree->cmd);
-	} else {
-
-		free_ast(tree->left);
-		free_ast(tree->right);
-		free(tree->op);
-	
-	}
-	free(tree);
-	*/
 }
 
 /*
  * Frees all memory from the given command structure, a leaf
  */
 void free_command(ast* tree) {
+
+	assert(tree->type == 0);
 
 	if(tree == 0) {
 		return;
@@ -259,9 +221,7 @@ void free_command(ast* tree) {
 	assert(tree->type == 0);
 
 	if(tree->value->leaf->func) {
-
 		free(tree->value->leaf->func);
-
 	}
 
 	if(tree->value->leaf->args) {
@@ -277,29 +237,6 @@ void free_command(ast* tree) {
 	free(tree->value->leaf);
 	free(tree->value);
 	free(tree);
-
-
-	/*
-
-	if(com->args == 0 && com->func == 0) {
-			free(com);
-			return;
-	}
-
-		
-	free(com->func);
-
-	if(com->args != 0) {
-		for(int i = 0; com->args[i] != 0; ++i) {
-			if(com->args[0] == 0) {
-				break;
-			}	
-			free(com->args[i]);
-		}
-	}
-	free(com->args);
-	free(com);
-	*/
 }
 
 
