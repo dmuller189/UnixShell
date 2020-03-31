@@ -10,6 +10,7 @@
 #include "svec.h"
 #include "ast.h"
 #include "hashmap.h"
+#include <assert.h>
 
 char* readCArgs(int size, char* argv[]); 
 void buildAndRun(char* line);
@@ -17,6 +18,8 @@ int execTree(ast* tree);
 
 /*
  *executes a simple shell command (no special operators)
+
+ tree is therefore of type leaf
  */
 int simpleCommand(ast* tree) {
 
@@ -28,26 +31,28 @@ int simpleCommand(ast* tree) {
 	*/
 
 	//do nothing on null data
-	if(tree == 0 || tree->cmd == 0) {
+	if(tree == 0 ||tree->value == 0  || tree->value->leaf == 0) {
 			return 0;
 	}
 
+	assert(tree->type == 0);
+
 	//passed empty comand
-	if(strcmp("", tree->cmd->func) == 0 || tree->cmd->func == 0) {
+	if(strcmp("", tree->value->leaf->func) == 0 || tree->value->leaf->func == 0) {
 		return 0;
 	}
 
 	//special case of 'false' command
-    if (strcmp("false",tree->cmd->func) == 0) {
+    if (strcmp("false",tree->value->leaf->func) == 0) {
         return -1;
     }
 
     //special case of 'true' command
-    if (strcmp("true",tree->cmd->func) == 0) {
+    if (strcmp("true",tree->value->leaf->func) == 0) {
         return 0;
     }
 
-    char* cmd = tree->cmd->func;
+    char* cmd = tree->value->leaf->func;
     int cpid;
 
     if((cpid = fork())) {
@@ -57,7 +62,7 @@ int simpleCommand(ast* tree) {
 
     } else {
         //child process
-        return  execvp(cmd, tree->cmd->args);
+        return  execvp(cmd, tree->value->leaf->args);
         exit(-1);
     }
     return 0; 
@@ -81,9 +86,10 @@ void buildAndRun(char* line) {
  * Executes case of tree split of ';' operator
  */
 int semiColonCommand(ast* tree) {
+assert(tree->type == 1);	
 
-   int first =  execTree(tree->left);
-   int sec =  execTree(tree->right);
+   int first =  execTree(tree->value->node->left);
+   int sec =  execTree(tree->value->node->right);
 
    if (first == 0 && sec == 0) {
        return 0;
@@ -97,11 +103,11 @@ int semiColonCommand(ast* tree) {
  * Executes case of ast split of '&&' operator
  */
 int andCommand(ast* tree) { 
-
-    int goodFirst = execTree(tree->left);
+assert(tree->type == 1);	
+    int goodFirst = execTree(tree->value->node->left);
     int sec = -1;
     if(goodFirst == 0) {
-      sec =  execTree(tree->right);
+      sec =  execTree(tree->value->node->right);
     }
 
     if (sec == 0) {
@@ -116,17 +122,18 @@ int andCommand(ast* tree) {
  */
 int orCommand(ast* tree) {
 
-    int first = execTree(tree->left);
+    int first = execTree(tree->value->node->left);
 
     if(first != 0) {
-        execTree(tree->right);
+        execTree(tree->value->node->right);
     }
 }
 
 /*
  * Executes case of ast split of '&' operator
  */ 
-int backgroundCommand(ast* tree) { 
+int backgroundCommand(ast* tree) {
+assert(tree->type == 1);	
     int cpid;
 
     if((cpid = fork())) {
@@ -134,7 +141,7 @@ int backgroundCommand(ast* tree) {
 	return 0;	
     } else {
     //child
-    execTree(tree->left);
+    execTree(tree->value->node->left);
     _exit(0);
 
     }
@@ -145,7 +152,7 @@ int backgroundCommand(ast* tree) {
  * Executes case of ast split on '>'  operator
  */
 int redirectOutputCommand(ast* tree) { 
-
+assert(tree->type == 1);	
     int cpid;
 
     if((cpid = fork())) {
@@ -159,11 +166,11 @@ int redirectOutputCommand(ast* tree) {
         //int fd = open(tree->right->cmd->func, O_CREAT | O_APPEND | O_WRONLY , 0644);
        
 		int fd;
-		fd = open(tree->right->cmd->func, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		fd = open(tree->value->node->right->value->leaf->func, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 		dup2(fd, 1);
 		close(fd);
 
-        execTree(tree->left);
+        execTree(tree->value->node->left);
 	
     }
 }
@@ -172,7 +179,7 @@ int redirectOutputCommand(ast* tree) {
  * Executes case of ast split on '<' operator
  */
 int redirectInputCommand(ast* tree) {
-
+assert(tree->type == 1);	
     int cpid;
 
     if((cpid = fork())) {
@@ -183,12 +190,12 @@ int redirectInputCommand(ast* tree) {
     }else {
 
 		int fd;
-        fd = open(tree->right->cmd->func, O_RDONLY, 0);
+        fd = open(tree->value->node->right->value->leaf->func, O_RDONLY, 0);
 	
         dup2(fd, 0);
         close(fd);
 
-        execTree(tree->left);
+        execTree(tree->value->node->left);
     }
 }
 
@@ -197,7 +204,8 @@ int redirectInputCommand(ast* tree) {
  * Executes case of ast split on '|' operator
  */
 int pipeCommand(ast* tree) {
-    
+   
+        assert(tree->type == 1);	
 	int cpid;
 	int cpid2;
 	int fdrs[2];
@@ -212,13 +220,13 @@ int pipeCommand(ast* tree) {
 			//child/parent
 			dup2(fdrs[0], 0);
 			close(fdrs[1]);
-			execTree(tree->right);
+			execTree(tree->value->node->right);
 			waitpid(cpid2, 0, 0);
 		} else {
 			//child.child
 			dup2(fdrs[1], 1);
 			close(fdrs[0]);
-			execTree(tree->left);
+			execTree(tree->value->node->left);
 		}
 	}
 }
@@ -227,9 +235,11 @@ int pipeCommand(ast* tree) {
 /*
  * handles special case of changing directory command
  */
-int handleCD(ast* tree) { 
+int handleCD(ast* tree) {
 
-    if(chdir(tree->cmd->args[1]) != 0) {
+	assert(tree->type == 0);	
+
+    if(chdir(tree->value->leaf->args[1]) != 0) {
         return -1;
     }
     return 0;
@@ -257,48 +267,52 @@ int execTree(ast* tree) {
 	}	
 
     //handling cd 
-    if(tree->op == 0 && strcmp(tree->cmd->func, "cd") == 0) {
+    if(tree->value->node->op == 0 && strcmp(tree->value->leaf->func, "cd") == 0) {
         return handleCD(tree);
     }
 
     //handle exit
-    if(tree->op == 0 && strcmp("exit", tree->cmd->func) == 0) {
+    if(tree->type == 0 && strcmp("exit", tree->value->leaf->func) == 0) {
         return handleExit(tree);
     }
 
     //simple command case
-    if(tree->op == 0 && tree->cmd != 0) {
-        return simpleCommand(tree);
-        
+    if(tree->type == 0 && tree->value->leaf != 0) {
+        return simpleCommand(tree); 
     } 
 
     
-    if(strcmp(";", tree->op) == 0) {
+
+	//rest must be case with operators
+
+	assert(tree->type == 1);
+
+    if(strcmp(";", tree->value->node->op) == 0) {
        return semiColonCommand(tree);
     }
 
-    if (strcmp("&&", tree->op) == 0) {
+    if (strcmp("&&", tree->value->node->op) == 0) {
         return andCommand(tree);
     }
 
-    if(strcmp("||", tree->op) == 0) {
+    if(strcmp("||", tree->value->node->op) == 0) {
         return orCommand(tree);
     }
 
-    if(strcmp("&", tree->op) == 0) {
+    if(strcmp("&", tree->value->node->op) == 0) {
         return backgroundCommand(tree);
     }
 
-    if(strcmp(">", tree->op) == 0) {
+    if(strcmp(">", tree->value->node->op) == 0) {
 
         return redirectOutputCommand(tree);
     }
     
-    if(strcmp("<", tree->op) == 0){
+    if(strcmp("<", tree->value->node->op) == 0){
         return redirectInputCommand(tree);
     }
 
-    if(strcmp("|", tree->op) == 0) {
+    if(strcmp("|", tree->value->node->op) == 0) {
         return pipeCommand(tree);
     }
 

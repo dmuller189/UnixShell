@@ -5,7 +5,7 @@
 #include <assert.h>
 #include "hashmap.h"
 int wordIsOperator(char* word);
-void free_command(command* com);
+void free_command(ast* com);
 
 
 /**
@@ -73,8 +73,6 @@ int wordIsOperator(char* word) {
  *		- if found, splits on operator and recusively adds left and right ast
  *		- if not found, a command leaf is added to the data structure
  *Inspired by lecture notes on parsing an arithmetic expression
- TODO - handle the right side of an operator being null / empty 
- 		- as to not break slicing 
  */
 ast* parse(svec* tokens, hashmap* map) {
 
@@ -114,10 +112,19 @@ ast* parse(svec* tokens, hashmap* map) {
  */
 ast* make_ast_op(char* op, ast* left, ast* right){
 	ast* tree = malloc(sizeof(ast));
-	tree->op = strdup(op);
-	tree->left = left;
-	tree->right = right;
-	tree->cmd = 0;
+	tree->type = 1;
+
+	container* c = malloc(sizeof(container));
+
+	node* n = malloc(sizeof(node));
+	n->op = strdup(op);
+	n->left = left;
+	n->right = right;
+
+	c->node = n;
+
+	tree->value = c;
+
 	return tree;
 }
 
@@ -153,12 +160,35 @@ char** buildCommandArgs(svec* tokens, char* funcName)  {
 /*
  * Build an abstract syntax tree representing a leaf node - a simple command with no shell operators
  */
-ast* make_ast_command(svec* tokens) {
+ast*  make_ast_command(svec* tokens) {
 
 	ast* tree = malloc(sizeof(ast));
-	tree->op = 0;
-	tree->left = 0;
-	tree->right = 0;
+	tree->type = 0;
+
+	container* c = malloc(sizeof(container));
+
+	command* leaf = malloc(sizeof(command));
+	
+
+	if(tokens->size == 0) {
+		leaf->func = 0;
+	} else {
+		leaf->func = strdup(svec_get(tokens, 0));
+	}
+
+	leaf->args = malloc(sizeof(char*)*(tokens->size + 2));
+	leaf->args = buildCommandArgs(tokens, leaf->func);
+
+	c->leaf = leaf;
+
+	tree->value = c;
+
+	return tree;
+
+
+
+	/*
+	command* tree = malloc(sizeof(ast));
 	
 	command* c = malloc(sizeof(command));
 
@@ -173,6 +203,7 @@ ast* make_ast_command(svec* tokens) {
 	tree->cmd = c;
 
 	return tree;
+	*/
 }
 
 
@@ -185,6 +216,22 @@ void free_ast(ast* tree) { //TODO
 		return;
 	}
 
+	if(tree->type == 0) { //leaf
+		free_command(tree);
+	} else { //must be a node
+
+		free_ast(tree->value->node->left); //TODO - need arrows to node, or just value->left
+		free_ast(tree->value->node->right);
+		free(tree->value->node->op);
+	}
+
+
+	free(tree->value->node);
+	free(tree->value);
+	free(tree);
+
+
+	/*
 	if(tree->op == 0) {
 		free(tree->right);
 		free(tree->left);
@@ -197,16 +244,42 @@ void free_ast(ast* tree) { //TODO
 	
 	}
 	free(tree);
+	*/
 }
 
 /*
- * Frees all memory from the given command structure
+ * Frees all memory from the given command structure, a leaf
  */
-void free_command(command* com) {
+void free_command(ast* tree) {
 
-	if(com == 0) {
+	if(tree == 0) {
 		return;
 	}
+
+	assert(tree->type == 0);
+
+	if(tree->value->leaf->func) {
+
+		free(tree->value->leaf->func);
+
+	}
+
+	if(tree->value->leaf->args) {
+		for (int i = 0; tree->value->leaf->args[i] != 0; ++i) {
+			if(tree->value->leaf->args[i] == 0) {
+				break;
+			}
+			free(tree->value->leaf->args[i]);
+		}
+	}
+
+	free(tree->value->leaf->args);
+	free(tree->value->leaf);
+	free(tree->value);
+	free(tree);
+
+
+	/*
 
 	if(com->args == 0 && com->func == 0) {
 			free(com);
@@ -226,6 +299,7 @@ void free_command(command* com) {
 	}
 	free(com->args);
 	free(com);
+	*/
 }
 
 
