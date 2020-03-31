@@ -16,10 +16,8 @@ struct ast;
  *	- args: the shell arguments of the command
  */
 typedef struct command {
-
 	char* func;
 	char** args;
-
 } command;
 
 /*
@@ -28,7 +26,6 @@ typedef struct command {
  * - left and right are recursively valid ast's, 
  */
 typedef struct node {
-
 	char* op;
 	struct ast* left;
 	struct ast* right;	
@@ -50,8 +47,6 @@ typedef union container {
 typedef struct ast {
 	int type; //leaf or node? (0 = leaf, 1 = node)
 	container* value; //the leaf or node value
-	//TODO - rename to 'container'
-
 } ast;
 
 
